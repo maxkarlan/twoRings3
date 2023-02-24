@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js Outer Space Background</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.min.js"></script>
+    <script>
+       // Step 1: Create a new three.js scene and renderer
+// Step 1: Create a new three.js scene and renderer
+// Step 1: Create a new three.js scene and renderer
+const scene = new THREE.Scene();
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Step 2: Create a new camera and add it to the scene
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+scene.add(camera);
+
+// Step 3: Load the skybox texture using TextureLoader
+const loader = new THREE.TextureLoader();
+const texture = loader.load('https://cdn1.epicgames.com/ue/product/Screenshot/Screenshot6-1920x1080-ff435ff202ffd7d20f6e920dc8e2ba68.png?resize=1&w=1920');
+
+// Step 4: Create a new sky material using MeshBasicMaterial and set the texture to the map property
+const skyMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide });
+
+// Step 5: Create a new sphere geometry to represent the sky, and use the sky material to create a new mesh
+const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+scene.add(sky);
+      
+const mouse = new THREE.Vector2();
+const windowHalf = new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2);
+
+function onMouseMove(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+
+document.addEventListener('mousemove', onMouseMove, false);
+
+
+// Step 6: Render the scene using the renderer
+function render() {
+    requestAnimationFrame(render);
+    camera.position.x = mouse.x * 5;
+    camera.position.y = mouse.y * 5;
+    camera.lookAt(scene.position);
+    renderer.render(scene, camera);
+}
+
+render();
+
+
+    </script>
+</body>
+</html>
