@@ -1,66 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Three.js Outer Space Background</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-        }
-    </style>
-</head>
-<body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.min.js"></script>
-    <script>
-       // Step 1: Create a new three.js scene and renderer
-// Step 1: Create a new three.js scene and renderer
-// Step 1: Create a new three.js scene and renderer
-const scene = new THREE.Scene();
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+<html>
+    <head>
+        <title>My Three.js Scene with Flickering Line Segments</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script>
+            // Three.js code here
+            const scene = new THREE.Scene();
 
-// Step 2: Create a new camera and add it to the scene
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-scene.add(camera);
+            // Create a camera and renderer
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
 
-// Step 3: Load the skybox texture using TextureLoader
-const loader = new THREE.TextureLoader();
-const texture = loader.load('https://cdn1.epicgames.com/ue/product/Screenshot/Screenshot6-1920x1080-ff435ff202ffd7d20f6e920dc8e2ba68.png?resize=1&w=1920');
+            // Create 100 line segments and add them to the scene
+            const lineGroup = new THREE.Group();
 
-// Step 4: Create a new sky material using MeshBasicMaterial and set the texture to the map property
-const skyMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide });
+            const intervalLength = .01; // interval length in seconds
+            let lastAppearTime = -Infinity;
 
-// Step 5: Create a new sphere geometry to represent the sky, and use the sky material to create a new mesh
-const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
-const sky = new THREE.Mesh(skyGeometry, skyMaterial);
-scene.add(sky);
-      
-const mouse = new THREE.Vector2();
-const windowHalf = new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2);
+            for (let i = 0; i < 100; i++) {
+                const startPoint = new THREE.Vector3(
+                    Math.random() * 40 - 20,
+                    Math.random() * 40 - 20,
+                    Math.random() * 40 - 20
+                );
+                const endPoint = new THREE.Vector3(
+                    Math.random() * 40 - 20,
+                    Math.random() * 40 - 20,
+                    Math.random() * 40 - 20
+                );
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints([startPoint, endPoint]);
+                const lineMaterial = new THREE.LineBasicMaterial({color: Math.random() * 0xffffff});
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                line.visible = false;
+                lineGroup.add(line);
+            }
 
-function onMouseMove(event) {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}
+            scene.add(lineGroup);
 
-document.addEventListener('mousemove', onMouseMove, false);
+            // Animate the scene to make the lines flicker
+            let count = 0;
+            function animate() {
+                count += 0.1;
 
+                if (Date.now() - lastAppearTime > intervalLength * 1000) {
+                    // Show a line segment
+                    const index = Math.floor(Math.random() * lineGroup.children.length);
+                    const line = lineGroup.children[index];
+                    line.visible = true;
+                    lastAppearTime = Date.now();
+                }
 
-// Step 6: Render the scene using the renderer
-function render() {
-    requestAnimationFrame(render);
-    camera.position.x = mouse.x * 5;
-    camera.position.y = mouse.y * 5;
-    camera.lookAt(scene.position);
-    renderer.render(scene, camera);
-}
+                for (let i = 0; i < lineGroup.children.length; i++) {
+                    const line = lineGroup.children[i];
+                    const flickerRate = i / 100;
 
-render();
+                    if (line.visible && flickerRate + count % 1 > 0.5) {
+                        line.visible = false;
+                    }
+                }
 
+                renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            }
 
-    </script>
-</body>
+            animate();
+
+            // Listen for mouse movement events and update the camera's position
+            document.addEventListener('mousemove', function(event) {
+                const x = event.clientX / window.innerWidth * 2 - 1;
+                const y = -event.clientY / window.innerHeight * 2 + 1;
+                camera.position.x = x * 10;
+                camera.position.y = y * 10;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            });
+
+            // Position the camera
+            camera.position.z = 50;
+        </script>
+    </body>
 </html>
